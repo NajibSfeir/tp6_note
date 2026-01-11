@@ -11,6 +11,6 @@ package com.mycompany.tp_note;
 public class Tp_note {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        System.out.println("Main's init");
     }
 }
