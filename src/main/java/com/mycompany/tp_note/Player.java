@@ -10,6 +10,6 @@ package com.mycompany.tp_note;
  */
 public class Player {
         public static void main(String[] args) {
-            System.out.println("TEST");
+            System.out.println("Joe's class");
         }
 }
