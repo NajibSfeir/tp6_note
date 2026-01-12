@@ -8,91 +8,93 @@ import java.util.stream.Collectors;
 /**
  * Console-based user interface for the Hangman game.
  * <p>
- * Responsible only for user I/O. No game rules are implemented here.
+ * This class is responsible only for input/output operations.
+ * All game logic is handled by the engine layer.
  * </p>
  */
 public class ConsoleUI implements UserInterface {
 
     private static final int CLEAR_LINES = 50;
-    private static final String SEPARATOR = "------------------------------------------------";
+    private static final String SEPARATOR =
+            "------------------------------------------------";
 
     /**
-     * ASCII hangman stages indexed by number of errors.
-     * The last stage is reused for any errors beyond the supported range.
+     * All hangman ASCII stages indexed by error count.
+     * This avoids duplicated string literals and improves maintainability.
      */
     private static final String[] HANGMAN_STAGES = {
-            String.join("\n",
-                    " +---+",
-                    " |   |",
-                    "     |",
-                    "     |",
-                    "     |",
-                    "     |",
-                    "======="
-            ),
-            String.join("\n",
-                    " +---+",
-                    " |   |",
-                    " O   |",
-                    "     |",
-                    "     |",
-                    "     |",
-                    "======="
-            ),
-            String.join("\n",
-                    " +---+",
-                    " |   |",
-                    " O   |",
-                    " |   |",
-                    "     |",
-                    "     |",
-                    "======="
-            ),
-            String.join("\n",
-                    " +---+",
-                    " |   |",
-                    " O   |",
-                    " |   |",
-                    " |   |",
-                    "     |",
-                    "======="
-            ),
-            String.join("\n",
-                    " +---+",
-                    " |   |",
-                    " O   |",
-                    "/|   |",
-                    " |   |",
-                    "     |",
-                    "======="
-            ),
-            String.join("\n",
-                    " +---+",
-                    " |   |",
-                    " O   |",
-                    "/|\\  |",
-                    " |   |",
-                    "     |",
-                    "======="
-            ),
-            String.join("\n",
-                    " +---+",
-                    " |   |",
-                    " O   |",
-                    "/|\\  |",
-                    " |   |",
-                    "/    |",
-                    "======="
-            ),
-            String.join("\n",
-                    " +---+",
-                    " |   |",
-                    " O   |",
-                    "/|\\  |",
-                    " |   |",
-                    "/ \\  |",
-                    "======="
-            )
+            """
+             +---+
+             |   |
+                 |
+                 |
+                 |
+                 |
+            =======
+            """,
+            """
+             +---+
+             |   |
+             O   |
+                 |
+                 |
+                 |
+            =======
+            """,
+            """
+             +---+
+             |   |
+             O   |
+             |   |
+                 |
+                 |
+            =======
+            """,
+            """
+             +---+
+             |   |
+             O   |
+             |   |
+             |   |
+                 |
+            =======
+            """,
+            """
+             +---+
+             |   |
+             O   |
+            /|   |
+             |   |
+                 |
+            =======
+            """,
+            """
+             +---+
+             |   |
+             O   |
+            /|\\  |
+             |   |
+                 |
+            =======
+            """,
+            """
+             +---+
+             |   |
+             O   |
+            /|\\  |
+             |   |
+            /    |
+            =======
+            """,
+            """
+             +---+
+             |   |
+             O   |
+            /|\\  |
+             |   |
+            / \\  |
+            =======
+            """
     };
 
     private final Scanner scanner;
@@ -104,16 +106,15 @@ public class ConsoleUI implements UserInterface {
 
     /**
      * Prompts the user for a single alphabetic letter.
-     * The method blocks until a valid input is provided.
      *
-     * @return the proposed letter
+     * @return a valid letter entered by the user
      */
     @Override
     public char askForLetter() {
         System.out.print("Proposez une lettre : ");
         while (true) {
             String input = scanner.nextLine().trim();
-            if (isSingleLetter(input)) {
+            if (isValidLetter(input)) {
                 return input.charAt(0);
             }
             System.out.print("Entrée invalide. Veuillez entrer une seule lettre : ");
@@ -121,10 +122,9 @@ public class ConsoleUI implements UserInterface {
     }
 
     /**
-     * Displays the current game state: hangman drawing, masked word,
-     * error counter, and proposed letters.
+     * Displays the current game state.
      *
-     * @param state current game state (must not be null)
+     * @param state the current game state
      */
     @Override
     public void displayGameState(GameState state) {
@@ -136,15 +136,17 @@ public class ConsoleUI implements UserInterface {
         System.out.println("\n" + SEPARATOR);
         printHangman(state.getErrorsCount());
         System.out.println("Mot : " + state.getMaskedWord());
-        System.out.println("Erreurs : " + state.getErrorsCount() + "/" + state.getMaxErrors());
-        System.out.println("Lettres proposées : " + formatGuessedLetters(state));
+        System.out.println("Erreurs : "
+                + state.getErrorsCount() + "/" + state.getMaxErrors());
+        System.out.println("Lettres proposées : "
+                + formatGuessedLetters(state));
         System.out.println(SEPARATOR + "\n");
     }
 
     /**
-     * Displays the end-of-game message and the final hangman drawing.
+     * Displays the final game result.
      *
-     * @param state final game state (must not be null)
+     * @param state the final game state
      */
     @Override
     public void displayEndGame(GameState state) {
@@ -154,17 +156,24 @@ public class ConsoleUI implements UserInterface {
         }
 
         printHangman(state.getErrorsCount());
+
         if (state.getCurrentStatus() == GameState.Status.WON) {
-            System.out.println("FÉLICITATIONS ! Vous avez trouvé le mot : " + state.getSecretWord());
+            System.out.println(
+                    "FÉLICITATIONS ! Vous avez trouvé le mot : "
+                            + state.getSecretWord()
+            );
         } else {
-            System.out.println("PERDU ! Le mot était : " + state.getSecretWord());
+            System.out.println(
+                    "PERDU ! Le mot était : "
+                            + state.getSecretWord()
+            );
         }
     }
 
     /**
-     * Asks player 1 for the secret word (2-player mode) and clears the screen afterward.
+     * Asks player 1 to enter the secret word in two-player mode.
      *
-     * @return the secret word entered by player 1
+     * @return the entered secret word
      */
     @Override
     public String askForSecretWord() {
@@ -174,14 +183,21 @@ public class ConsoleUI implements UserInterface {
         return word;
     }
 
+    /**
+     * Informs the user that a letter has already been proposed.
+     *
+     * @param letter the repeated letter
+     */
     @Override
     public void displayAlreadyGuessed(char letter) {
-        System.out.println("(!) La lettre '" + letter + "' a déjà été proposée. Essayez une autre.");
+        System.out.println(
+                "(!) La lettre '" + letter + "' a déjà été proposée. Essayez une autre."
+        );
     }
 
-    // -------------------- Private helpers --------------------
+    /* -------------------- Helper methods -------------------- */
 
-    private static boolean isSingleLetter(String input) {
+    private static boolean isValidLetter(String input) {
         return input.length() == 1 && Character.isLetter(input.charAt(0));
     }
 
@@ -199,11 +215,7 @@ public class ConsoleUI implements UserInterface {
     }
 
     private static void printHangman(int errors) {
-        int index = clamp(errors, 0, HANGMAN_STAGES.length - 1);
+        int index = Math.min(errors, HANGMAN_STAGES.length - 1);
         System.out.println(HANGMAN_STAGES[index]);
-    }
-
-    private static int clamp(int value, int min, int max) {
-        return Math.max(min, Math.min(max, value));
     }
 }
