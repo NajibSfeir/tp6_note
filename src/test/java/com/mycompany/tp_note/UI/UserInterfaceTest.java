@@ -5,17 +5,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for the UserInterface contract.
- * 
- * This test verifies that a class implementing UserInterface
- * respects the method signatures and can be used polymorphically.
- */
 public class UserInterfaceTest {
 
-    /**
-     * Dummy implementation used only for testing the interface contract.
-     */
     private static class DummyUserInterface implements UserInterface {
 
         @Override
@@ -37,6 +28,11 @@ public class UserInterfaceTest {
         public String askForSecretWord() {
             return "TEST";
         }
+
+        @Override
+        public void displayAlreadyGuessed(char letter) {
+            // no-op
+        }
     }
 
     @Test
@@ -46,7 +42,7 @@ public class UserInterfaceTest {
     }
 
     @Test
-    void testAskForLetterReturnsChar() {
+    void testAskForLetterReturnsLetter() {
         UserInterface ui = new DummyUserInterface();
         char letter = ui.askForLetter();
         assertTrue(Character.isLetter(letter));
@@ -64,5 +60,11 @@ public class UserInterfaceTest {
         String word = ui.askForSecretWord();
         assertNotNull(word);
         assertFalse(word.isEmpty());
+    }
+
+    @Test
+    void testDisplayAlreadyGuessedDoesNotThrow() {
+        UserInterface ui = new DummyUserInterface();
+        assertDoesNotThrow(() -> ui.displayAlreadyGuessed('A'));
     }
 }
