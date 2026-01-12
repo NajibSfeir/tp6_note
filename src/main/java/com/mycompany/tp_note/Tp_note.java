@@ -25,7 +25,7 @@ public class Tp_note {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        ConsoleUI ui = new ConsoleUI();
+        ConsoleUI ui = new ConsoleUI(scanner);
 
         System.out.println("Bienvenue au Jeu du Pendu !");
         System.out.println("1. Mode 1 Joueur (Contre l'ordinateur)");
@@ -52,6 +52,7 @@ public class Tp_note {
                 wordProvider = new DictionaryWordProvider();
             } catch (IOException e) {
                 System.err.println("Erreur de chargement du dictionnaire : " + e.getMessage());
+                scanner.close();
                 return;
             }
         }
@@ -61,6 +62,7 @@ public class Tp_note {
             secretWord = wordProvider.getWord();
         } catch (IOException e) {
             System.err.println("Erreur lors de la récupération du mot : " + e.getMessage());
+            scanner.close();
             return;
         }
 
@@ -72,8 +74,8 @@ public class Tp_note {
             secretWord = "PENDU";
         }
 
-        // Ask for max errors (Difficulty)
-        int maxErrors = MAX_ERRORS; // Default 7
+        // ask for max errors, default=7
+        int maxErrors = MAX_ERRORS;
         System.out.print("Nombre d'erreurs max (6 ou 7) ? [défaut: 7] : ");
         String errorInput = scanner.nextLine().trim();
         if (!errorInput.isEmpty()) {

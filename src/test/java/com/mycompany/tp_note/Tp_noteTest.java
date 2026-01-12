@@ -1,100 +1,135 @@
 package com.mycompany.tp_note;
 
-import com.mycompany.tp_note.UI.UserInterface;
-import com.mycompany.tp_note.data.DictionaryWordProvider;
-import com.mycompany.tp_note.engine.GameController;
-import com.mycompany.tp_note.engine.GameState;
-import com.mycompany.tp_note.engine.HangmanGame;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Integration-style tests for the application wiring (without running main()).
- * These tests are CI-safe: they do not read from System.in and do not block.
- */
-public class Tp_noteTest {
+class Tp_noteTest {
 
-    /**
-     * A scripted UI that returns a sequence of letters and records calls.
-     * This avoids any dependency on the real Console UI.
-     */
-    private static class ScriptedUI implements UserInterface {
+    private InputStream originalIn;
+    private PrintStream originalOut;
+    private PrintStream originalErr;
+    private ByteArrayOutputStream outContent;
+    private ByteArrayOutputStream errContent;
 
-        private final Queue<Character> letters = new ArrayDeque<>();
-        int displayStateCalls = 0;
-        int endCalls = 0;
+    @BeforeEach
+    void setUp() {
+        originalIn = System.in;
+        originalOut = System.out;
+        originalErr = System.err;
 
-        ScriptedUI(String lettersScript) {
-            for (char c : lettersScript.toCharArray()) {
-                letters.add(c);
-            }
-        }
+        outContent = new ByteArrayOutputStream();
+        errContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+        System.setErr(new PrintStream(errContent));
+    }
 
-        @Override
-        public void displayGameState(GameState state) {
-            displayStateCalls++;
-        }
+    @AfterEach
+    void tearDown() {
+        System.setIn(originalIn);
+        System.setOut(originalOut);
+        System.setErr(originalErr);
+    }
 
-        @Override
-        public char askForLetter() {
-            // If script runs out, provide a wrong letter to finish the game
-            return letters.isEmpty() ? 'Z' : letters.remove();
-        }
-
-        @Override
-        public void displayEndGame(GameState state) {
-            endCalls++;
-        }
-
-        @Override
-        public String askForSecretWord() {
-            return "IGNORED";
-        }
-
-        // If your UserInterface has this method, keep it. If not, remove it.
-        @Override
-        public void displayAlreadyGuessed(char letter) {
-            // no-op
-        }
+    private void provideInput(String data) {
+        ByteArrayInputStream testIn = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+        System.setIn(testIn);
     }
 
     @Test
-    void dictionaryProviderLoadsAtLeastOneWord() throws IOException {
-        DictionaryWordProvider provider = new DictionaryWordProvider();
-        assertTrue(provider.getSize() > 0, "Dictionary should load at least one valid word");
-        assertNotNull(provider.getWord(), "Provider should return a non-null word");
-        assertFalse(provider.getWord().isEmpty(), "Provider should not return an empty word");
+    void testMode1_EasyDifficulty_LossLoop() {
+        // Inputs:
+        // "1" -> Mode 1
+        // "7" -> Difficulty (Max Errors)
+        // "A"..."Z" -> Guesses until loss
+        StringBuilder inputs = new StringBuilder();
+        inputs.append("1\n"); // Mode 1
+        inputs.append("7\n"); // Errors
+        // Guess A-Z. The random word is likely not "ABCDEFGHIJKLMNOPQRSTUVWXYZ", so
+        // eventually it loses.
+        // We just need to exhaust the 7 errors.
+        for (char c = 'A'; c <= 'Z'; c++) {
+            inputs.append(c).append("\n");
+        }
+
+        provideInput(inputs.toString());
+
+        Tp_note.main(new String[] {});
+
+        String out = outContent.toString();
+        // Check for basic game flow markers
+        assertTrue(out.contains("Bienvenue au Jeu du Pendu"), "Should show welcome message");
+        assertTrue(out.contains("Nombre d'erreurs max (6 ou 7)"), "Should ask for difficulty");
+        assertTrue(out.contains("PERDU") || out.contains("FÉLICITATIONS"), "Should finish game");
     }
 
     @Test
-    void controllerCanRunGameToCompletionWithoutConsoleInput() {
-        // simple word so we can end quickly
-        HangmanGame game = new HangmanGame("AB", 7);
+    void testMode2_Win() {
+        // Inputs:
+        // "2" -> Mode 2
+        // "TEST" -> Secret Word
+        // "6" -> Difficulty
+        // "T", "E", "S" -> Winning guesses
+        String inputs = "2\n" +
+                "TEST\n" +
+                "6\n" +
+                "T\nE\nS\n";
 
-        // script guesses A then B -> WIN
-        ScriptedUI ui = new ScriptedUI("AB");
+        provideInput(inputs);
 
-        GameController controller = new GameController(game, ui);
-        controller.startGame();
+        Tp_note.main(new String[] {});
 
-        assertEquals(GameState.Status.WON, game.getState().getCurrentStatus(),
-                "Game should end in WON status with correct guesses");
-        assertEquals(1, ui.endCalls, "End game should be displayed exactly once");
-        assertTrue(ui.displayStateCalls >= 1, "Game state should be displayed at least once");
+        String out = outContent.toString();
+        assertTrue(out.contains("Mode 2 Joueurs"), "Option 2 indicates Mode 2"); // Or just inferred from flow
+        assertTrue(out.contains("Joueur 1, entrez le mot secret"), "Should ask for secret word");
+        assertTrue(out.contains("FÉLICITATIONS"), "Should win");
     }
+
     @Test
-    void testMainMethodInstantiation() {
-        // This test simply invokes the main method logic via a small refactor or direct
-        // call
-        // to ensure the class is loadable.
-        // Ideally, we refactor Tp_note to accept dependencies, but for 100% coverage on
-        // a static main:
-        Tp_note app = new Tp_note();
-        assertNotNull(app);
+    void testInvalidInputs() {
+        // Inputs:
+        // "NotANumber" -> Scanner exception handled, defaults to Mode 0 or similar but
+        // logic handles it
+        // Actually Tp_note: if (scanner.hasNextInt()) ... catch Exception.
+        // If not int, mode stays 0.
+        // if mode != 2 -> Default to Mode 1 (Dictionary).
+
+        // "1" (Implicitly selected by fallback if mode=0 from invalid input? No, if
+        // invalid, mode=0. logic says if mode==2... else ... dictionary. So mode 0 ->
+        // dictionary -> valid path.)
+
+        // Wait, if I pass "NotNum", scanner.hasNextInt() is false?
+        // Code:
+        // if (scanner.hasNextInt()) { mode = scanner.nextInt(); ... }
+        // catch (Exception) { // nothing }
+        //
+        // So valid non-int input makes mode=0.
+        // Then block "if (mode == 2) ... else { ... }" executes else block (Mode 1).
+
+        // Then "InvalidDifficulty" for max errors -> defaults to 7.
+        // Then guesses.
+
+        StringBuilder inputs = new StringBuilder();
+        inputs.append("NotAMode\n");
+        inputs.append("NotADifficulty\n");
+        for (char c = 'A'; c <= 'Z'; c++) {
+            inputs.append(c).append("\n");
+        }
+
+        provideInput(inputs.toString());
+
+        Tp_note.main(new String[] {});
+
+        String out = outContent.toString();
+        assertTrue(out.contains("Valeur invalide") || out.contains("Entrée invalide"),
+                "Should warn about invalid difficulty or handle it silently");
     }
 }

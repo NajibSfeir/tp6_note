@@ -100,7 +100,16 @@ public class ConsoleUI implements UserInterface {
 
     /** Creates a ConsoleUI reading from standard input. */
     public ConsoleUI() {
-        this.scanner = new Scanner(System.in);
+        this(new Scanner(System.in));
+    }
+
+    /**
+     * Creates a ConsoleUI using the provided Scanner.
+     * 
+     * @param scanner the scanner to use for input
+     */
+    public ConsoleUI(Scanner scanner) {
+        this.scanner = scanner;
     }
 
     /**
