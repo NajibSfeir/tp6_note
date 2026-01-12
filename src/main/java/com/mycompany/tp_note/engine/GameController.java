@@ -29,7 +29,11 @@ public class GameController {
         while (game.getState().getCurrentStatus() == Status.PLAYING) {
             ui.displayGameState(game.getState());
             char letter = ui.askForLetter();
-            game.guessLetter(letter);
+            if (game.getState().getGuessedLetters().contains(Character.toUpperCase(letter))) {
+                ui.displayAlreadyGuessed(letter);
+            } else {
+                game.guessLetter(letter);
+            }
         }
         ui.displayEndGame(game.getState());
     }

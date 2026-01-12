@@ -21,7 +21,7 @@ public class ConsoleUI implements UserInterface {
     }
 
     /*
-     The main game loop is managed by the GameController.
+     * The main game loop is managed by the GameController.
      * This class only handles interactions with the user.
      */
 
@@ -41,6 +41,7 @@ public class ConsoleUI implements UserInterface {
             System.out.print("Entrée invalide. Veuillez entrer une seule lettre : ");
         }
     }
+
     /**
      * This includes the visual representation of the hangman,
      * the masked word, the number of errors, and the list of
@@ -60,7 +61,7 @@ public class ConsoleUI implements UserInterface {
         System.out.println("Lettres proposées : " + guessed);
         System.out.println("------------------------------------------------\n");
     }
-    
+
     /**
      * Displays the current state of the game.
      * This includes the visual representation of the hangman,
@@ -76,7 +77,8 @@ public class ConsoleUI implements UserInterface {
             System.out.println("PERDU ! Le mot était : " + state.getSecretWord());
         }
     }
-     /**
+
+    /**
      * Prompts the first player to enter the secret word in two-player mode.
      * The console is cleared afterward in order to hide the word from
      * the second player.
@@ -89,6 +91,12 @@ public class ConsoleUI implements UserInterface {
             System.out.println();
         return word;
     }
+
+    @Override
+    public void displayAlreadyGuessed(char letter) {
+        System.out.println("(!) La lettre '" + letter + "' a déjà été proposée. Essayez une autre.");
+    }
+
     /**
      * Displays the hangman ASCII representation corresponding
      * to the current number of errors.
@@ -169,6 +177,6 @@ public class ConsoleUI implements UserInterface {
                 System.out.println("=======");
                 break;
         }
-      
+
     }
 }

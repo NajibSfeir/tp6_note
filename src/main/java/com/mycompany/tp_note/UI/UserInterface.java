@@ -1,6 +1,7 @@
 package com.mycompany.tp_note.UI;
 
 import com.mycompany.tp_note.engine.GameState;
+
 /**
  * Interface defining user interaction contracts.
  */
@@ -32,4 +33,11 @@ public interface UserInterface {
      * @return The secret word.
      */
     String askForSecretWord();
+
+    /**
+     * Display a message stating the letter was already guessed.
+     * 
+     * @param letter The letter.
+     */
+    void displayAlreadyGuessed(char letter);
 }
