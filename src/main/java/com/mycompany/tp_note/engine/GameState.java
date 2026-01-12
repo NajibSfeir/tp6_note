@@ -1,4 +1,4 @@
-package fr.ecn.pendu.engine;
+package com.mycompany.tp_note.engine;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,8 +21,8 @@ public class GameState {
     /**
      * Creates a new game state.
      * 
-     * @param secretWord The word to guess.
-     * @param maxErrors  Maximum allowed errors.
+     * @param secretWord aka the word to guess.
+     * @param maxErrors  aka maximum allowed errors.
      */
     public GameState(String secretWord, int maxErrors) {
         this.secretWord = secretWord.toUpperCase();
