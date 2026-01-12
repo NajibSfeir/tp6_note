@@ -80,6 +80,8 @@ class GameControllerTest {
 
         @Override
         public void displayGameState(GameState state) {
+            // Intentionally empty for testing purposes: we do not need to display the game
+            // state in tests.
         }
 
         @Override
