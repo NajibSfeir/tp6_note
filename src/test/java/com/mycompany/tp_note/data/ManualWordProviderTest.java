@@ -24,6 +24,7 @@ public class ManualWordProviderTest {
 
         @Override
         public void displayGameState(GameState state) {
+            // Intentionally empty for stub
         }
 
         @Override
@@ -33,10 +34,12 @@ public class ManualWordProviderTest {
 
         @Override
         public void displayEndGame(GameState state) {
+            // Intentionally empty for stub
         }
 
         @Override
         public void displayAlreadyGuessed(char letter) {
+            // Intentionally empty for stub
         }
     }
 
