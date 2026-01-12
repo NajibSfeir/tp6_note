@@ -69,4 +69,26 @@ class HangmanGameTest {
         assertEquals(0, game.getState().getErrorsCount());
         assertFalse(game.getState().getGuessedLetters().contains('1'));
     }
+
+    @Test
+    void testConstructorInvalidInputs() {
+        assertThrows(IllegalArgumentException.class, () -> new HangmanGame(null, 5));
+        assertThrows(IllegalArgumentException.class, () -> new HangmanGame("", 5));
+        assertThrows(IllegalArgumentException.class, () -> new HangmanGame("   ", 5));
+        assertThrows(IllegalArgumentException.class, () -> new HangmanGame("ABC", 0));
+        assertThrows(IllegalArgumentException.class, () -> new HangmanGame("ABC", -1));
+    }
+
+    @Test
+    void testGuessLetterWhenGameNotPlaying() {
+        HangmanGame game = new HangmanGame("A", 1);
+        game.guessLetter('A'); // Won
+        assertEquals(Status.WON, game.getState().getCurrentStatus());
+
+        // Try to guess again
+        game.guessLetter('B');
+        // Should not change anything
+        assertEquals(Status.WON, game.getState().getCurrentStatus());
+        assertEquals(1, game.getState().getGuessedLetters().size());
+    }
 }

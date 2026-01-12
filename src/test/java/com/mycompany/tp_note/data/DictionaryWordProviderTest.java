@@ -1,7 +1,7 @@
 package com.mycompany.tp_note.data;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
+import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class DictionaryWordProviderTest {
@@ -17,8 +17,17 @@ public class DictionaryWordProviderTest {
         DictionaryWordProvider provider = new DictionaryWordProvider();
         String word = provider.getWord();
         assertNotNull(word);
-        assertFalse(word.isEmpty());
-        // Verify upper case as per implementation
-        assertEquals(word.toUpperCase(), word);
+        assertFalse(word.isEmpty(), "Returned word should not be empty");
+        assertEquals(word.toUpperCase(), word, "Returned word should be uppercase");
+    }
+
+    @Test
+    public void testMultipleGetWordCalls() throws IOException {
+        DictionaryWordProvider provider = new DictionaryWordProvider();
+        for (int i = 0; i < 10; i++) {
+            String w = provider.getWord();
+            assertNotNull(w);
+            assertFalse(w.isEmpty());
+        }
     }
 }
