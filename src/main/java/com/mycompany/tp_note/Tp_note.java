@@ -72,7 +72,24 @@ public class Tp_note {
             secretWord = "PENDU";
         }
 
-        HangmanGame game = new HangmanGame(secretWord, MAX_ERRORS);
+        // Ask for max errors (Difficulty)
+        int maxErrors = MAX_ERRORS; // Default 7
+        System.out.print("Nombre d'erreurs max (6 ou 7) ? [défaut: 7] : ");
+        String errorInput = scanner.nextLine().trim();
+        if (!errorInput.isEmpty()) {
+            try {
+                int val = Integer.parseInt(errorInput);
+                if (val == 6 || val == 7) {
+                    maxErrors = val;
+                } else {
+                    System.out.println("Valeur invalide. Utilisation par défaut : " + MAX_ERRORS);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Entrée invalide. Utilisation par défaut : " + MAX_ERRORS);
+            }
+        }
+
+        HangmanGame game = new HangmanGame(secretWord, maxErrors);
         GameController controller = new GameController(game, ui);
         controller.startGame();
 

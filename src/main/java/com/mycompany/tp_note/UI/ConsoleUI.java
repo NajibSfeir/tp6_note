@@ -15,8 +15,7 @@ import java.util.stream.Collectors;
 public class ConsoleUI implements UserInterface {
 
     private static final int CLEAR_LINES = 50;
-    private static final String SEPARATOR =
-            "------------------------------------------------";
+    private static final String SEPARATOR = "------------------------------------------------";
 
     /**
      * All hangman ASCII stages indexed by error count.
@@ -24,77 +23,77 @@ public class ConsoleUI implements UserInterface {
      */
     private static final String[] HANGMAN_STAGES = {
             """
-             +---+
-             |   |
-                 |
-                 |
-                 |
-                 |
-            =======
-            """,
+                     +---+
+                     |   |
+                         |
+                         |
+                         |
+                         |
+                    =======
+                    """,
             """
-             +---+
-             |   |
-             O   |
-                 |
-                 |
-                 |
-            =======
-            """,
+                     +---+
+                     |   |
+                     O   |
+                         |
+                         |
+                         |
+                    =======
+                    """,
             """
-             +---+
-             |   |
-             O   |
-             |   |
-                 |
-                 |
-            =======
-            """,
+                     +---+
+                     |   |
+                     O   |
+                     |   |
+                         |
+                         |
+                    =======
+                    """,
             """
-             +---+
-             |   |
-             O   |
-             |   |
-             |   |
-                 |
-            =======
-            """,
+                     +---+
+                     |   |
+                     O   |
+                     |   |
+                     |   |
+                         |
+                    =======
+                    """,
             """
-             +---+
-             |   |
-             O   |
-            /|   |
-             |   |
-                 |
-            =======
-            """,
+                     +---+
+                     |   |
+                     O   |
+                    /|   |
+                     |   |
+                         |
+                    =======
+                    """,
             """
-             +---+
-             |   |
-             O   |
-            /|\\  |
-             |   |
-                 |
-            =======
-            """,
+                     +---+
+                     |   |
+                     O   |
+                    /|\\  |
+                     |   |
+                         |
+                    =======
+                    """,
             """
-             +---+
-             |   |
-             O   |
-            /|\\  |
-             |   |
-            /    |
-            =======
-            """,
+                     +---+
+                     |   |
+                     O   |
+                    /|\\  |
+                     |   |
+                    /    |
+                    =======
+                    """,
             """
-             +---+
-             |   |
-             O   |
-            /|\\  |
-             |   |
-            / \\  |
-            =======
-            """
+                     +---+
+                     |   |
+                     O   |
+                    /|\\  |
+                     |   |
+                    / \\  |
+                    =======
+                    """
     };
 
     private final Scanner scanner;
@@ -134,7 +133,7 @@ public class ConsoleUI implements UserInterface {
         }
 
         System.out.println("\n" + SEPARATOR);
-        printHangman(state.getErrorsCount());
+        printHangman(state.getErrorsCount(), state.getMaxErrors());
         System.out.println("Mot : " + state.getMaskedWord());
         System.out.println("Erreurs : "
                 + state.getErrorsCount() + "/" + state.getMaxErrors());
@@ -155,18 +154,16 @@ public class ConsoleUI implements UserInterface {
             return;
         }
 
-        printHangman(state.getErrorsCount());
+        printHangman(state.getErrorsCount(), state.getMaxErrors());
 
         if (state.getCurrentStatus() == GameState.Status.WON) {
             System.out.println(
                     "FÉLICITATIONS ! Vous avez trouvé le mot : "
-                            + state.getSecretWord()
-            );
+                            + state.getSecretWord());
         } else {
             System.out.println(
                     "PERDU ! Le mot était : "
-                            + state.getSecretWord()
-            );
+                            + state.getSecretWord());
         }
     }
 
@@ -191,8 +188,7 @@ public class ConsoleUI implements UserInterface {
     @Override
     public void displayAlreadyGuessed(char letter) {
         System.out.println(
-                "(!) La lettre '" + letter + "' a déjà été proposée. Essayez une autre."
-        );
+                "(!) La lettre '" + letter + "' a déjà été proposée. Essayez une autre.");
     }
 
     /* -------------------- Helper methods -------------------- */
@@ -214,8 +210,24 @@ public class ConsoleUI implements UserInterface {
         }
     }
 
-    private static void printHangman(int errors) {
-        int index = Math.min(errors, HANGMAN_STAGES.length - 1);
-        System.out.println(HANGMAN_STAGES[index]);
+    private static void printHangman(int errors, int maxErrors) {
+        // If maxErrors is 6, we skip index 2 (small body) and jump to 3 (full body)
+        // Mapping: 0->0, 1->1, 2->3, 3->4, 4->5, 5->6, 6->7
+        int stageIndex;
+        if (maxErrors == 6) {
+            if (errors == 0)
+                stageIndex = 0;
+            else if (errors == 1)
+                stageIndex = 1;
+            else
+                stageIndex = errors + 1; // 2->3, 3->4, etc.
+        } else {
+            // Default 7 errors: direct mapping
+            stageIndex = errors;
+        }
+
+        // Safety clamp
+        stageIndex = Math.min(stageIndex, HANGMAN_STAGES.length - 1);
+        System.out.println(HANGMAN_STAGES[stageIndex]);
     }
 }

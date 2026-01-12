@@ -130,12 +130,52 @@ public class ConsoleUITest {
         GameState state = new GameState("JAVA", 7);
 
         // force errorsCount to 7 (depends on your API)
-        for (int i = 0; i < 7; i++) state.incrementErrors();
+        for (int i = 0; i < 7; i++)
+            state.incrementErrors();
         state.setStatus(GameState.Status.LOST);
 
         ui.displayEndGame(state);
 
         String o = output();
         assertTrue(o.contains("/ \\  |"), "Final hangman should show both legs at 7 errors");
+    }
+
+    @Test
+    void displayHangmanForSixErrorsDifficulty() {
+        ConsoleUI ui = new ConsoleUI();
+        GameState state = new GameState("JAVA", 6); // Hard mode
+
+        // Error 0 -> Stage 0 (Empty)
+        ui.displayGameState(state);
+        assertTrue(output().contains("     |"), "Stage 0 should be empty body");
+
+        // Error 1 -> Stage 1 (Head)
+        state.incrementErrors();
+        ui.displayGameState(state);
+        assertTrue(output().contains(" O   |"), "Stage 1 should have head");
+        // Reset stream
+        setUp();
+
+        // Error 2 -> Stage 3 (Head + Body + Leg?) - Actually Stage 3 in array is
+        // Body+Leg?
+        // Let's check mapping:
+        // 0->0, 1->1, 2->3
+        // Stage 1: Head
+        // Stage 2: Head + Body (skipped)
+        // Stage 3: Head + Body + Leg (Wait, let's verify array content)
+        // Array[3]:
+        // O
+        // |
+        // |
+        // That is Head + Torso.
+        // Array[2]:
+        // O
+        // |
+
+        state.incrementErrors(); // Total 2
+        ui.displayGameState(state);
+        // Should print Stage 3
+        String o = output();
+        assertTrue(o.contains(" |   |"), "Stage 3 (2 errors in hard mode) should have full torso/body");
     }
 }
